@@ -4,6 +4,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
@@ -25,20 +26,27 @@ SDL_Surface *gScreenSurface{nullptr};
 
 SDL_Surface *gHelloWorld{nullptr};
 
+SDL_Renderer *gRenderer{nullptr};
+
 bool init() {
   bool success{true};
 
   if (SDL_Init(SDL_INIT_VIDEO) == false) {
     SDL_Log("SDL could not initialize! SDL error: %s\n", SDL_GetError());
-    success == false;
+    success = false;
   } else {
     if (gWindow =
             SDL_CreateWindow("SDL3 Tutorial", kScreenWidth, kScreenHeight, 0);
         gWindow == nullptr) {
       SDL_Log("Window could not be created! SDL error: %s\n", SDL_GetError());
-      success == false;
+      success = false;
     } else {
       gScreenSurface = SDL_GetWindowSurface(gWindow);
+    }
+    if (gRenderer = SDL_CreateRenderer(gWindow, nullptr);
+        gRenderer == nullptr) {
+      SDL_Log("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+      success = false;
     }
   }
   return success;
@@ -64,6 +72,9 @@ void close() {
   SDL_DestroyWindow(gWindow);
   gWindow = nullptr;
   gScreenSurface = nullptr;
+
+  SDL_DestroyRenderer(gRenderer);
+  gRenderer = nullptr;
 
   SDL_Quit();
 }
@@ -95,6 +106,9 @@ int main() {
             SDL_MapSurfaceRGB(gScreenSurface, 0xFF, 0xFF, 0xFF));
 
         SDL_BlitSurface(gHelloWorld, nullptr, gScreenSurface, nullptr);
+
+        SDL_SetRenderDrawColor(gRenderer, 0xF0, 0xF0, 0xF0, 0xFF);
+        SDL_RenderLine(gRenderer, 20.0f, 20.0f, 40.0f, 70.0f);
 
         SDL_UpdateWindowSurface(gWindow);
       }
