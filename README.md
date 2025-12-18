@@ -18,6 +18,9 @@ This project focuses on:
 - Lines are clamped to the window bounds to prevent out-of-range drawing
 - Multiple walks are rendered simultaneously using different colors
 
+![Screenshot of Random Walk Simulator](screenshots/random_walk.png)
+
+
 ---
 
 ## Project Structure
