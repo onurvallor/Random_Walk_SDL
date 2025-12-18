@@ -8,15 +8,21 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <random>
-#include <stdexcept>
-#include <string>
+#include <utility>
+#include <vector>
 
 constexpr int kScreenWidth{640};
 constexpr int kScreenHeight{480};
+
+constexpr int halfScreenWidth = kScreenWidth / 2;
+constexpr int halfScreenHeight = kScreenHeight / 2;
+
+constexpr int kNumberOfWalks{150};
 
 bool init();
 
@@ -26,11 +32,35 @@ void close();
 
 SDL_Window *gWindow{nullptr};
 
-// SDL_Surface *gScreenSurface{nullptr};
-
-// SDL_Surface *gHelloWorld{nullptr};
-
 SDL_Renderer *gRenderer{nullptr};
+
+struct WalkStruct {
+  std::vector<std::pair<float, float>> points = {
+      std::make_pair(::halfScreenWidth, ::halfScreenHeight)};
+
+  float cx = points.at(0).first;
+  float cy = points.at(0).second;
+
+  const float radius = 25.0f;
+  float theta{};
+
+  float x{};
+  float y{};
+  WalkStruct() {
+    points.reserve(kNumberOfWalks + 1); // make space to avoid extra
+                                        // allocations.
+    points.emplace_back(halfScreenWidth, halfScreenHeight);
+  }
+};
+
+struct ColorStruct {
+  int r{};
+  int g{};
+  int b{};
+  int a{255}; // fully visible by default
+};
+
+void drawLines(WalkStruct &walk, ColorStruct &color);
 
 bool init() {
   bool success{true};
@@ -44,9 +74,6 @@ bool init() {
         gWindow == nullptr) {
       SDL_Log("Window could not be created! SDL error: %s\n", SDL_GetError());
       success = false;
-      //} else {
-      // gScreenSurface = SDL_GetWindowSurface(gWindow);
-      // gRenderer = SDL_GetRenderer(gWindow);
     }
     if (gRenderer = SDL_CreateRenderer(gWindow, nullptr);
         gRenderer == nullptr) {
@@ -78,7 +105,17 @@ int main() {
     exitCode = 1;
   } else {
     SDL_Event e{};
+
     bool isRunning{1};
+
+    WalkStruct walk{};
+    WalkStruct walkTwo{};
+
+    ColorStruct blue{0, 0, 255, 255};
+    ColorStruct red{255, 0, 0, 255};
+
+    SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+    SDL_RenderClear(gRenderer);
 
     while (isRunning) {
       while (SDL_PollEvent(&e)) {
@@ -87,23 +124,12 @@ int main() {
           isRunning = 0;
         }
       }
-      SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0);
+
+      SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
       SDL_RenderClear(gRenderer);
 
-      SDL_SetRenderDrawColor(gRenderer, 255, 0, 0, 0);
-      //  SDL_RenderLine(gRenderer, 40.0f, 40.0f, 60.0f, 85.0f);
-      // SDL_RenderLine(gRenderer, 60.0f, 85.0f, 100.0f, 135.0f);
-
-      float cx = std::rand() % 50;
-      float cy = std::rand() % 50;
-
-      float radius = 25.0f;
-      float theta = static_cast<float>(std::rand()) / RAND_MAX * (2.0f * M_PI);
-
-      float x = cx + radius * std::cos(theta);
-      float y = cy + radius * std::sin(theta);
-
-      SDL_RenderLine(gRenderer, x, y, cx, cy);
+      drawLines(walk, blue);
+      drawLines(walkTwo, red);
 
       SDL_RenderPresent(gRenderer);
     }
@@ -112,4 +138,26 @@ int main() {
   close();
 
   return exitCode;
+}
+
+void drawLines(WalkStruct &walk, ColorStruct &color) {
+  SDL_SetRenderDrawColor(gRenderer, color.r, color.g, color.b, color.a);
+  int i{0};
+
+  for (i = 0; i < kNumberOfWalks; i++) {
+    std::pair<float, float> current_pair = walk.points.back();
+
+    walk.theta = static_cast<float>(std::rand()) / RAND_MAX * (2.0f * M_PI);
+    walk.x = current_pair.first + walk.radius * std::cos(walk.theta);
+    walk.y = current_pair.second + walk.radius * std::sin(walk.theta);
+
+    walk.x = std::clamp(walk.x, 0.0f, static_cast<float>(kScreenWidth));
+    walk.y = std::clamp(walk.y, 0.0f, static_cast<float>(kScreenHeight));
+
+    SDL_RenderLine(gRenderer, current_pair.first, current_pair.second, walk.x,
+                   walk.y);
+    walk.points.emplace_back(std::make_pair(walk.x, walk.y));
+
+    SDL_Delay(10);
+  }
 }
