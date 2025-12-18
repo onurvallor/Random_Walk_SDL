@@ -9,6 +9,9 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
+#include <cmath>
+#include <cstdlib>
+#include <random>
 #include <stdexcept>
 #include <string>
 
@@ -88,7 +91,19 @@ int main() {
       SDL_RenderClear(gRenderer);
 
       SDL_SetRenderDrawColor(gRenderer, 255, 0, 0, 0);
-      SDL_RenderLine(gRenderer, 40.0f, 40.0f, 60.0f, 85.0f);
+      //  SDL_RenderLine(gRenderer, 40.0f, 40.0f, 60.0f, 85.0f);
+      // SDL_RenderLine(gRenderer, 60.0f, 85.0f, 100.0f, 135.0f);
+
+      float cx = std::rand() % 50;
+      float cy = std::rand() % 50;
+
+      float radius = 25.0f;
+      float theta = static_cast<float>(std::rand()) / RAND_MAX * (2.0f * M_PI);
+
+      float x = cx + radius * std::cos(theta);
+      float y = cy + radius * std::sin(theta);
+
+      SDL_RenderLine(gRenderer, x, y, cx, cy);
 
       SDL_RenderPresent(gRenderer);
     }
