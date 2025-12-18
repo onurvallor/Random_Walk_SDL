@@ -1,0 +1,3 @@
+/home/onur/Coding/Random_Walk_SDL/build/CMakeFiles/Random_Walk_SDL.dir
+/home/onur/Coding/Random_Walk_SDL/build/CMakeFiles/edit_cache.dir
+/home/onur/Coding/Random_Walk_SDL/build/CMakeFiles/rebuild_cache.dir
